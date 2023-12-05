@@ -10,11 +10,11 @@ def parse_input(input_file):
 
     # Parse the seeds
     seeds_line = next(lines_iter).split(':')[1].split()
-    seeds = set()
+    seeds = []
     for i in range(0, len(seeds_line), 2):
         start_seed = int(seeds_line[i])
         length = int(seeds_line[i+1])
-        seeds.update(range(start_seed, start_seed + length))
+        seeds.append((start_seed, length))
 
     # Parse the mappings
     mappings = []
@@ -32,16 +32,28 @@ def parse_input(input_file):
     return seeds, mappings
 
 def walk_through_mappings(seeds, mappings):
-    locations = set()
-    for seed in seeds:
-        location = seed
+    all_location_ranges = []
+    for start_seed, length in seeds:
+        location_ranges = [(start_seed, start_seed + length)]
         for mapping in mappings:
-            for start_value, start_key, length in mapping:
-                if start_key <= location < start_key + length:
-                    location = start_value + (location - start_key)
-                    break
-        locations.add(location)
-    return locations
+            new_location_ranges = []
+            for start_location, end_location in location_ranges:
+                for start_key, start_value, map_length in mapping:
+                    if start_key <= start_location < start_key + map_length:
+                        new_start_location = start_value + (start_location - start_key)
+                        new_end_location = min(start_value + map_length, end_location)
+                        new_location_ranges.append((new_start_location, new_end_location))
+                        if new_end_location < end_location:
+                            start_location = new_end_location
+                        else:
+                            break
+                    elif start_location < start_key:
+                        break
+                else:
+                    new_location_ranges.append((start_location, end_location))
+            location_ranges = new_location_ranges
+        all_location_ranges.extend(location_ranges)
+    return min(start for start, end in all_location_ranges)
 
 def main(input_file):
     seeds, mappings = parse_input(input_file)
