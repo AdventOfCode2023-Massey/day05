@@ -1,3 +1,7 @@
+# Advent of Code 2023 Day 5 Part 1
+# Code by Github Copilot Chat
+# Editing by Bart Massey
+
 def parse_input(input_file):
     with open(input_file, 'r') as f:
         lines = [line.strip() for line in f if line.strip()]
