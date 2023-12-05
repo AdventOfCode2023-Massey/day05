@@ -38,7 +38,7 @@ def walk_through_mappings(seeds, mappings):
         for mapping in mappings:
             new_location_ranges = []
             for start_location, end_location in location_ranges:
-                for start_key, start_value, map_length in mapping:
+                for start_value, start_key, map_length in mapping:
                     if start_key <= start_location < start_key + map_length:
                         new_start_location = start_value + (start_location - start_key)
                         new_end_location = min(start_value + map_length, end_location)
