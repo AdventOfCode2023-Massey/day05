@@ -1,55 +1,42 @@
-# Advent of Code 2023 Day 5 Part 1
-# Code by Github Copilot Chat
-# Editing by Bart Massey
-
-def map_number(num, mapping):
-    for dest_start, src_start, length in mapping:
-        if src_start <= num < src_start + length:
-            return dest_start + (num - src_start)
-    return num
-
-def solve(seeds, seed_to_soil, soil_to_fertilizer, fertilizer_to_water, water_to_light, light_to_temperature, temperature_to_humidity, humidity_to_location):
-    locations = []
-    for seed in seeds:
-        soil = map_number(seed, seed_to_soil)
-        fertilizer = map_number(soil, soil_to_fertilizer)
-        water = map_number(fertilizer, fertilizer_to_water)
-        light = map_number(water, water_to_light)
-        temperature = map_number(light, light_to_temperature)
-        humidity = map_number(temperature, temperature_to_humidity)
-        location = map_number(humidity, humidity_to_location)
-        locations.append(location)
-    return min(locations)
-
-def main(input_file):
+def parse_input(input_file):
     with open(input_file, 'r') as f:
         lines = [line.strip() for line in f if line.strip()]
 
     lines_iter = iter(lines)
 
-    # Discard the seeds label line and parse the seeds
-    next(lines_iter)
-    seeds = list(map(int, next(lines_iter).split(':')[1].split()))
+    # Parse the seeds
+    seeds = set(map(int, next(lines_iter).split(':')[1].split()))
+
+    # Parse the mappings
     mappings = []
-    mapping = []
-    while True:
-        try:
-            # Discard the label line
-            next(lines_iter)
-            # If there's a previous mapping, append it to mappings
+    mapping = {}
+    for line in lines_iter:
+        if ':' in line:
             if mapping:
                 mappings.append(mapping)
-                mapping = []
-            # Collect lines for the current mapping until an empty line or end of file
-            while (line := next(lines_iter)) and ':' not in line:
-                mapping.append(tuple(map(int, line.split())))
-        except StopIteration:
-            # Append the last mapping
-            mappings.append(mapping)
-            break
+                mapping = {}
+        else:
+            start_value, start_key, length = map(int, line.split())
+            keys = range(start_key, start_key + length)
+            values = range(start_value, start_value + length)
+            mapping.update(zip(keys, values))
+    mappings.append(mapping)  # Append the last mapping
 
-    print(solve(seeds, *mappings))
+    return seeds, mappings
 
+def walk_through_mappings(seeds, mappings):
+    locations = set()
+    for seed in seeds:
+        location = seed
+        for mapping in mappings:
+            location = mapping.get(location, location)
+        locations.add(location)
+    return locations
+
+def main(input_file):
+    seeds, mappings = parse_input(input_file)
+    locations = walk_through_mappings(seeds, mappings)
+    print(min(locations))
 
 import sys
 
