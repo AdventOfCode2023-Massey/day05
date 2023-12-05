@@ -9,17 +9,15 @@ def parse_input(input_file):
 
     # Parse the mappings
     mappings = []
-    mapping = {}
+    mapping = []
     for line in lines_iter:
         if ':' in line:
             if mapping:
                 mappings.append(mapping)
-                mapping = {}
+                mapping = []
         else:
             start_value, start_key, length = map(int, line.split())
-            keys = range(start_key, start_key + length)
-            values = range(start_value, start_value + length)
-            mapping.update(zip(keys, values))
+            mapping.append((start_value, start_key, length))
     mappings.append(mapping)  # Append the last mapping
 
     return seeds, mappings
@@ -29,7 +27,10 @@ def walk_through_mappings(seeds, mappings):
     for seed in seeds:
         location = seed
         for mapping in mappings:
-            location = mapping.get(location, location)
+            for start_value, start_key, length in mapping:
+                if start_key <= location < start_key + length:
+                    location = start_value + (location - start_key)
+                    break
         locations.add(location)
     return locations
 
